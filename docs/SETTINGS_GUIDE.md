@@ -51,9 +51,9 @@ Chrome indicates audio playback with a small speaker icon on the tab. Tab Suspen
 
 When enabled, Tab Suspender's content script checks for unsaved form data on the page. If any input fields, textareas, or select elements have been modified from their default values, the tab will not be suspended. This prevents you from losing work in progress, such as a half-written email or a partially filled form.
 
-**How it works:** The content script compares each form element's current value against its `defaultValue` (or `defaultChecked` for checkboxes/radio buttons). If any difference is detected, the tab is marked as having unsaved forms.
+**How it works:** The content script compares text inputs against `defaultValue`, checkboxes/radio buttons against `defaultChecked`, and each select option's `selected` state against `defaultSelected`. The background script keeps the reported status per tab and skips suspension when this setting is enabled. Form status is cleared when a page starts loading or its tab closes.
 
-**Note:** This detection is best-effort. Some modern single-page applications manage state internally without standard HTML form elements, so the detection may not catch all cases.
+**Note:** This detection is best-effort. Some modern single-page applications manage state internally without standard HTML form elements, so the detection may not catch all cases. Direct popup suspension actions may bypass the background's protection checks.
 
 ## Never Suspend Pinned Tabs
 

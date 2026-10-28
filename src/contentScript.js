@@ -31,6 +31,10 @@
 
             if (input.type === 'checkbox' || input.type === 'radio') {
                 if (input.checked !== input.defaultChecked) changed = true;
+            } else if (input.tagName === 'SELECT') {
+                if (Array.from(input.options).some(option => option.selected !== option.defaultSelected)) {
+                    changed = true;
+                }
             } else {
                 if (input.value !== input.defaultValue) changed = true;
             }

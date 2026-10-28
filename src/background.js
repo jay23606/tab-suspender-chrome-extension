@@ -17,7 +17,8 @@ const DEFAULT_CONFIG = {
     suspendPinnedTabs: false,
     whitelistedDomains: ['mail.google.com', 'calendar.google.com', 'docs.google.com'],
     neverSuspendAudio: true,
-    neverSuspendActiveTab: true
+    neverSuspendActiveTab: true,
+    neverSuspendUnsavedForms: true
 };
 
 let config = { ...DEFAULT_CONFIG };
@@ -28,6 +29,7 @@ let config = { ...DEFAULT_CONFIG };
 
 const tabTimers = new Map();
 const tabLastActivity = new Map();
+const tabUnsavedForms = new Map();
 
 // ============================================================================
 // INITIALIZATION
@@ -235,6 +237,10 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    // A new document must not inherit the previous page's form status.
+    if (changeInfo.status === 'loading') {
+        tabUnsavedForms.delete(tabId);
+    }
     if (changeInfo.status === 'complete' && !isInternalPage(tab.url)) {
         resetTabTimer(tabId);
     }
@@ -243,6 +249,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
     clearTabTimer(tabId);
     tabLastActivity.delete(tabId);
+    tabUnsavedForms.delete(tabId);
 });
 
 chrome.tabs.onCreated.addListener((tab) => {
@@ -274,6 +281,9 @@ async function handleMessage(message, sender) {
             return { success: true };
 
         case 'FORM_STATUS':
+            if (sender.tab?.id != null && typeof message.hasUnsavedForms === 'boolean') {
+                tabUnsavedForms.set(sender.tab.id, message.hasUnsavedForms);
+            }
             return { success: true };
 
         case 'CONTENT_SCRIPT_READY':
@@ -335,6 +345,7 @@ async function shouldSuspendTab(tabId) {
         if (config.neverSuspendActiveTab && tab.active) return false;
         if (!config.suspendPinnedTabs && tab.pinned) return false;
         if (config.neverSuspendAudio && tab.audible) return false;
+        if (config.neverSuspendUnsavedForms && tabUnsavedForms.get(tabId)) return false;
         if (isWhitelisted(tab.url)) return false;
 
         return true;
