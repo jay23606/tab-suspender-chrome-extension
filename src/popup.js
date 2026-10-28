@@ -241,9 +241,9 @@ function createTabItem(tab) {
 
         const action = actionBtn.dataset.action;
         if (action === 'suspend') {
-            await suspendTabDirect(tab.id, tab.url, tab.title, tab.favIconUrl);
+            await chrome.runtime.sendMessage({ type: 'SUSPEND_TAB', tabId: tab.id });
         } else {
-            await restoreTabDirect(tab.id, tab.url);
+            await chrome.runtime.sendMessage({ type: 'RESTORE_TAB', tabId: tab.id });
         }
 
         // Reload tabs
@@ -256,59 +256,14 @@ function createTabItem(tab) {
     return item;
 }
 
-// Direct suspend function (fallback)
-async function suspendTabDirect(tabId, url, title, favicon) {
-    try {
-        // Don't suspend internal pages
-        if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') || url.includes('suspended.html')) {
-            return;
-        }
-
-        const params = new URLSearchParams({
-            url: url,
-            title: title || 'Suspended Tab',
-            favicon: encodeURIComponent(favicon || ''),
-            time: Date.now()
-        });
-
-        const suspendedUrl = chrome.runtime.getURL(`suspended.html?${params.toString()}`);
-        await chrome.tabs.update(tabId, { url: suspendedUrl });
-    } catch (error) {
-        console.error('Failed to suspend tab:', error);
-    }
-}
-
-// Direct restore function (fallback)
-async function restoreTabDirect(tabId, currentUrl) {
-    try {
-        if (!currentUrl.includes('suspended.html')) {
-            await chrome.tabs.reload(tabId);
-            return;
-        }
-
-        const urlObj = new URL(currentUrl);
-        const originalUrl = urlObj.searchParams.get('url');
-
-        if (originalUrl) {
-            await chrome.tabs.update(tabId, { url: originalUrl });
-        }
-    } catch (error) {
-        console.error('Failed to restore tab:', error);
-    }
-}
-
 // Handle Suspend All
 async function handleSuspendAll() {
     suspendAllBtn.disabled = true;
     suspendAllBtn.textContent = 'Suspending...';
 
     try {
-        const tabs = await chrome.tabs.query({ active: false });
-        for (const tab of tabs) {
-            if (tab.url && !tab.url.startsWith('chrome://') && !tab.url.includes('suspended.html')) {
-                await suspendTabDirect(tab.id, tab.url, tab.title, tab.favIconUrl);
-            }
-        }
+        const response = await chrome.runtime.sendMessage({ type: 'SUSPEND_ALL' });
+        suspendAllBtn.textContent = `Suspended ${response?.count || 0}`;
 
         setTimeout(() => {
             loadStats();
@@ -334,12 +289,7 @@ async function handleRestoreAll() {
     restoreAllBtn.textContent = 'Restoring...';
 
     try {
-        const tabs = await chrome.tabs.query({});
-        for (const tab of tabs) {
-            if (tab.url && tab.url.includes('suspended.html')) {
-                await restoreTabDirect(tab.id, tab.url);
-            }
-        }
+        await chrome.runtime.sendMessage({ type: 'RESTORE_ALL' });
 
         setTimeout(() => {
             loadStats();
