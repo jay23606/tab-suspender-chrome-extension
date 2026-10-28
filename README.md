@@ -27,7 +27,7 @@ Unlike closed-source alternatives, every line of code is right here for you to i
 - **Instant Tab Restoration** — Click any suspended tab or press any key to instantly restore it to its original state
 - **Smart Domain Whitelist** — Protect important sites like Gmail, Google Calendar, and Google Docs from ever being suspended, with an easy-to-manage whitelist
 - **Audio Tab Protection** — Tabs playing music or video are never suspended, so your Spotify, YouTube, and podcast streams stay uninterrupted
-- **Unsaved Form Protection** — Keeps tabs with detected unsaved text, checkbox, or dropdown edits from being suspended by the background. Enabled by default; detection is best-effort, and direct popup actions may bypass this protection.
+- **Unsaved Form Protection** — Keeps tabs with detected unsaved text, checkbox, or dropdown edits from being suspended by the background. Enabled by default; detection is best-effort.
 - **Pinned Tab Protection** — Pinned tabs are never suspended by default, keeping your most important tabs always ready
 - **Active Tab Protection** — The tab you're currently viewing is never suspended
 - **Suspend & Restore All** — One-click buttons to suspend all inactive tabs at once or restore all suspended tabs simultaneously

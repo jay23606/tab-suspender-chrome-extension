@@ -53,7 +53,7 @@ When enabled, Tab Suspender's content script checks for unsaved form data on the
 
 **How it works:** The content script compares text inputs against `defaultValue`, checkboxes/radio buttons against `defaultChecked`, and each select option's `selected` state against `defaultSelected`. The background script keeps the reported status per tab and skips suspension when this setting is enabled. Form status is cleared when a page starts loading or its tab closes.
 
-**Note:** This detection is best-effort. Some modern single-page applications manage state internally without standard HTML form elements, so the detection may not catch all cases. Direct popup suspension actions may bypass the background's protection checks.
+**Note:** This detection is best-effort. Some modern single-page applications manage state internally without standard HTML form elements, so the detection may not catch all cases. Suspending a tab from the popup goes through the same check.
 
 ## Never Suspend Pinned Tabs
 
